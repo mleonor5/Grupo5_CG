@@ -1,40 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-       body{
-         margin: 0;
-       }
-       #canvas{
-         background-color: blue;
-         height: 100%;
-         width: 100%;
-       }
-    </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #canvas {
+      background-color: black;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
 </head>
+
 <body>
   <canvas id="canvas"></canvas>
-    <script>
-        const canvas = document.getElementById('canvas');
-        canvas.width= window.innerWidth
-        canvas.height= window.innerHeight
-        const ctx = canvas.getContext('2d');
-        const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
-            let timer;
-            return function (){
-                if(timer) {clearTimeout(timer)}    // if(timer) se timer tiver um valor, caso contrário não funciona
-                timer = setTimeout(func, 100)
-            };
-        };
+  <script>
+    const canvas = document.getElementById('canvas');
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const ctx = canvas.getContext('2d');
+    const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
+      let timer;
+      return function () {
+        if (timer) { clearTimeout(timer) }    // if(timer) se timer tiver um valor, caso contrário não funciona
+        timer = setTimeout(func, 100)
+      };
+    };
 
-        window.addEventListener('resize', debounce((function() {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-        })))
-    </script>
+    window.addEventListener('resize', debounce((function () {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    })))
+  </script>
 </body>
+
 </html>
