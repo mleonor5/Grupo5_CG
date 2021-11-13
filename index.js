@@ -8,6 +8,11 @@ const H = canvas.height
 //balls (array of objects)
 let b = new Array()
 
+//As variáveis vão contar a distância que o triângulo tem que mover em resultado da tecla precionada
+let deltaX = 0; let deltaY = 0;
+//As variáveis para as teclas
+let rightKey = false; let leftKey = false; let upKey = false
+
 
 const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
@@ -23,10 +28,53 @@ window.addEventListener('resize', debounce((function () {
     canvas.height = window.innerHeight
 })))
 
+//evento para quando a tecla é precionada
+window.addEventListener('keydown', e => {
+    if(e.key == 'ArrowRight'){
+        rightKey = true;
+        deltaX += 2;
+    };
+    if(e.key == 'ArrowLeft'){
+        leftKey = true;
+        deltaX -= 2;
+    }
+    if(e.key == 'ArrowUp'){
+        upKey = true;
+        deltaY -= 2;
+    }
+
+    e.preventDefault();
+
+    drawTriangle()
+});
+
+//evento para quando a tecla é libertada
+window.addEventListener('keyup', e => {
+    if(e.key == 'ArrowRight') rightKey = false;
+    if(e.key == 'ArrowLeft') leftKey = false;
+    if(e.key == 'ArrowUp') upKey = false;
+})
+
 window.onload = () => {
     init()  //setup the array of objects
     render() //start the animation
 }
+
+//função que desenha o triângulo
+function drawTriangle(){
+    //triângulo
+    ctx.beginPath();
+    ctx.moveTo(200 + deltaX, 100 + deltaY);
+    ctx.lineTo(180 + deltaX, 160 + deltaY);
+    ctx.lineTo(220 + deltaX, 160 + deltaY);
+    ctx.closePath();
+
+    //fill color
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+}
+
+drawTriangle()
 
 //function init asteroids
 function init() {
@@ -64,6 +112,7 @@ function render() {
         ball.leftCanvas()
     })
 
+    drawTriangle()
     window.requestAnimationFrame(render)
 }
 
