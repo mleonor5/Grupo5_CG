@@ -7,12 +7,17 @@ const W = canvas.width
 const H = canvas.height
 //balls (array of objects)
 let b = new Array()
+let bb = new Array()
 
 //As variáveis vão contar a distância que o triângulo tem que mover em resultado da tecla precionada
-let deltaX = 0; let deltaY = 0;
+let deltaX = W/2-200; let deltaY = H/2 - 150;
 //As variáveis para as teclas
-let rightKey = false; let leftKey = false; let upKey = false
+let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
+window.onload = () => {
+    init()  //setup the array of objects
+    render() //start the animation
+}
 
 const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
@@ -40,12 +45,16 @@ window.addEventListener('keydown', e => {
     }
     if(e.key == 'ArrowUp'){
         upKey = true;
-        deltaY -= 2;
     }
+
+    if(e.key == " "){
+        if(!e.repeat){ 
+            shot = true
+        }
+    }  
 
     e.preventDefault();
 
-    drawTriangle()
 });
 
 //evento para quando a tecla é libertada
@@ -53,67 +62,33 @@ window.addEventListener('keyup', e => {
     if(e.key == 'ArrowRight') rightKey = false;
     if(e.key == 'ArrowLeft') leftKey = false;
     if(e.key == 'ArrowUp') upKey = false;
+    if(e.key == " "){
+        shot = false
+    } 
+
 })
 
-window.onload = () => {
-    init()  //setup the array of objects
-    render() //start the animation
-}
 
-//função que desenha o triângulo
-function drawTriangle(){
-    //triângulo
-    ctx.beginPath();
-    ctx.moveTo(200 + deltaX, 100 + deltaY);
-    ctx.lineTo(180 + deltaX, 160 + deltaY);
-    ctx.lineTo(220 + deltaX, 160 + deltaY);
-    ctx.closePath();
-
-    //fill color
-    ctx.fillStyle = '#fff';
-    ctx.fill();
-}
-
-drawTriangle()
-
-//function init asteroids
-function init() {
-    //setup the balls
-    for (let i = 0; i < 20; i++) {
-        let color = 'white'
-
-        //Random size
-        let radius = 10 + Math.random() * 20
-
-        //random position
-        let xInit = radius + Math.random() * (W - 2 * radius)
-        let yInit = radius + Math.random() * (H - 2 * radius)
-
-        //random direction
-        let direction = Math.random() * 2 * Math.PI
-
-        //random velocity
-        let velocity = 1
-
-        b.push(new Ball(xInit, yInit, radius, direction, velocity, color))
+class Bullet{
+    constructor(x,y,r,c) {
+        this.x = x 
+        this.y = y 
+        this.R = r
+        this.c = c
     }
-}
 
-//function render
-function render() {
-    //fade Canvas
-    ctx.fillStyle = "black"
-    ctx.fillRect(0, 0, W, H);
-
-    //draw update
-    b.forEach(function (ball) {
-        ball.draw()
-        ball.update()
-        ball.leftCanvas()
-    })
-
-    drawTriangle()
-    window.requestAnimationFrame(render)
+    draw(){
+        ctx.fillStyle = this.c
+        ctx.beginPath()
+        ctx.arc(this.x, this.y,this.R,0,2*Math.PI)
+        ctx.fill()
+    }
+    update() {
+        this.y -= 2
+        if(this.y <= 0){
+            bb.shift()
+        }
+    }
 }
 
 //Class Balls
@@ -174,4 +149,73 @@ class Ball {
         }
 
     }
+}
+//função que desenha o triângulo
+function drawTriangle(){
+    //triângulo
+    ctx.beginPath();
+    ctx.moveTo(200 + deltaX, 100 + deltaY);   // ponta da nave
+    ctx.lineTo(180 + deltaX, 160 + deltaY);
+    ctx.lineTo(220 + deltaX, 160 + deltaY);
+    ctx.closePath();
+
+    //fill color
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+}
+
+drawTriangle()
+
+//function init asteroids
+function init() {
+    //setup the balls
+    for (let i = 0; i < 20; i++) {
+        let color = 'white'
+
+        //Random size
+        let radius = 10 + Math.random() * 20
+
+        //random position
+        let xInit = radius + Math.random() * (W - 2 * radius)
+        let yInit = radius + Math.random() * (H - 2 * radius)
+
+        //random direction
+        let direction = Math.random() * 2 * Math.PI
+
+        //random velocity
+        let velocity = 1
+
+        b.push(new Ball(xInit, yInit, radius, direction, velocity, color))
+    }
+}
+
+//function render
+function render() {
+    //fade Canvas
+    ctx.fillStyle = "black"
+    ctx.fillRect(0, 0, W, H);
+    if(shot){
+        let color = `yellow`;
+        let xInit = 200 + deltaX
+        let yInit = 100 + deltaY
+        let radius = 5
+        bb.push(new Bullet(xInit, yInit, radius, color)) 
+        shot = false
+    }
+    if(upKey){
+        deltaY -= 2;
+    }
+    //draw update
+    b.forEach(function (ball) {
+        ball.draw()
+        ball.update()
+        ball.leftCanvas()
+    })
+    bb.forEach(bullet =>{
+        bullet.draw();
+        bullet.update();
+        
+    })
+    drawTriangle()
+    window.requestAnimationFrame(render)
 }
