@@ -7,10 +7,11 @@ const W = canvas.width
 const H = canvas.height
 //balls (array of objects)
 let b = new Array()
-let bb = new Array()
+let balas = new Array()
+
 
 //As variáveis vão contar a distância que o triângulo tem que mover em resultado da tecla precionada
-let deltaX = W/2-200; let deltaY = H/2 - 150;
+let deltaX = W/2; let deltaY = H/2;
 //As variáveis para as teclas
 let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
@@ -37,11 +38,9 @@ window.addEventListener('resize', debounce((function () {
 window.addEventListener('keydown', e => {
     if(e.key == 'ArrowRight'){
         rightKey = true;
-        deltaX += 2;
     };
     if(e.key == 'ArrowLeft'){
         leftKey = true;
-        deltaX -= 2;
     }
     if(e.key == 'ArrowUp'){
         upKey = true;
@@ -70,7 +69,9 @@ window.addEventListener('keyup', e => {
 
 
 class Bullet{
-    constructor(x,y,r,c) {
+    constructor(x,y,r,c,yd,xd) {
+        this.xd = xd
+        this.yd = yd
         this.x = x 
         this.y = y 
         this.R = r
@@ -84,10 +85,12 @@ class Bullet{
         ctx.fill()
     }
     update() {
-        this.y -= 2
-        if(this.y <= 0){
-            bb.shift()
-        }
+        this.y += this.yd * 2
+        this.x += this.xd * 2
+
+        /* if(this.y <= 0){
+            balas.shift()
+        } */
     }
 }
 
@@ -150,21 +153,29 @@ class Ball {
 
     }
 }
+
+let rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
+let leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
+let upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+let upPointX, upPointY
+
 //função que desenha o triângulo
 function drawTriangle(){
-    //triângulo
+    upPointX = deltaX + 15 * Math.cos(upAngle)  // Coordenada X do ponto de onde saiem as balas
+    upPointY = deltaY + 15 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
+    let leftPointX = deltaX + 15 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
+    let leftPointY = deltaY + 15* Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
+    let rightPointX = deltaX + 15 * Math.cos(rightAngle) // Coordenada X do ponto direito
+    let rightPointY = deltaY + 15* Math.sin(rightAngle) // Coordenada Y do ponto direito
+    
+    ctx.fillStyle = "white"
     ctx.beginPath();
-    ctx.moveTo(200 + deltaX, 100 + deltaY);   // ponta da nave
-    ctx.lineTo(180 + deltaX, 160 + deltaY);
-    ctx.lineTo(220 + deltaX, 160 + deltaY);
-    ctx.closePath();
-
-    //fill color
-    ctx.fillStyle = '#fff';
-    ctx.fill();
+    ctx.moveTo(upPointX,upPointY);   // ponta da nave
+    ctx.lineTo(leftPointX, leftPointY)   // lado esquerdo
+    ctx.lineTo(rightPointX, rightPointY)   // lado direito
+    ctx.fill()
+    
 }
-
-drawTriangle()
 
 //function init asteroids
 function init() {
@@ -194,16 +205,29 @@ function render() {
     //fade Canvas
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, W, H);
+    if(rightKey){
+         rightAngle +=0.05
+         leftAngle +=0.05
+         upAngle +=0.05
+    };
+    if(leftKey){
+        leftAngle -=0.05
+        rightAngle -=0.05
+        upAngle -=0.05
+    }
     if(shot){
-        let color = `yellow`;
-        let xInit = 200 + deltaX
-        let yInit = 100 + deltaY
-        let radius = 5
-        bb.push(new Bullet(xInit, yInit, radius, color)) 
+        let color = `white`;
+        let xInit = upPointX
+        let yInit = upPointY
+        let radius = 2
+        let yDirection = Math.sin(upAngle)
+        let xDirection = Math.cos(upAngle)
+        balas.push(new Bullet(xInit, yInit, radius, color, yDirection, xDirection)) 
         shot = false
     }
     if(upKey){
-        deltaY -= 2;
+        deltaY += Math.sin(upAngle)
+        deltaX += Math.cos(upAngle)
     }
     //draw update
     b.forEach(function (ball) {
@@ -211,7 +235,7 @@ function render() {
         ball.update()
         ball.leftCanvas()
     })
-    bb.forEach(bullet =>{
+    balas.forEach(bullet =>{
         bullet.draw();
         bullet.update();
         
