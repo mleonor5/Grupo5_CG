@@ -200,6 +200,18 @@ function init() {
     }
 }
 
+//Função que desenha a nave inimiga no canvas
+function enemy(){
+    //imagem
+    let img = new Image()
+    img.src = './enemy1.png'
+    //coordenadas iniciais(para já está estas coordendas até conseguir fazer o seu movimento)
+    let imgX = 300
+    let imgY = 200
+    //desenha a imagem no canvas
+    ctx.drawImage(img, imgX, imgY, img.width/2.6, img.height/2.6)
+}
+
 //function render
 function render() {
     //fade Canvas
@@ -241,5 +253,6 @@ function render() {
         
     })
     drawTriangle()
+    enemy()
     window.requestAnimationFrame(render)
 }
