@@ -161,12 +161,12 @@ let upPointX, upPointY
 
 //função que desenha o triângulo
 function drawTriangle(){
-    upPointX = deltaX + 15 * Math.cos(upAngle)  // Coordenada X do ponto de onde saiem as balas
-    upPointY = deltaY + 15 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
-    let leftPointX = deltaX + 15 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
-    let leftPointY = deltaY + 15* Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
-    let rightPointX = deltaX + 15 * Math.cos(rightAngle) // Coordenada X do ponto direito
-    let rightPointY = deltaY + 15* Math.sin(rightAngle) // Coordenada Y do ponto direito
+    upPointX = deltaX + 35 * Math.cos(upAngle)  // Coordenada X do ponto de onde saiem as balas
+    upPointY = deltaY + 35 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
+    let leftPointX = deltaX + 35 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
+    let leftPointY = deltaY + 35* Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
+    let rightPointX = deltaX + 35 * Math.cos(rightAngle) // Coordenada X do ponto direito
+    let rightPointY = deltaY + 35* Math.sin(rightAngle) // Coordenada Y do ponto direito
     
     ctx.fillStyle = "white"
     ctx.beginPath();
