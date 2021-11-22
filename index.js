@@ -212,6 +212,16 @@ function enemy(){
     ctx.drawImage(img, imgX, imgY, img.width/2.6, img.height/2.6)
 }
 
+//Função que mostra o número de pontos(Falta a parte que conta os pontos que o utilizador ganha)
+function playerPoints(){
+    var text = 'Pontos:'
+    let points = 0
+    ctx.font = '20px Verdana'
+    ctx.fillStyle = 'White'
+    ctx.fillText(text, 50, 70)
+    ctx.fillText(points, 140, 72) 
+}
+
 //function render
 function render() {
     //fade Canvas
@@ -254,5 +264,6 @@ function render() {
     })
     drawTriangle()
     enemy()
+    playerPoints()
     window.requestAnimationFrame(render)
 }
