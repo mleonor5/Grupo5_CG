@@ -222,6 +222,16 @@ function playerPoints(){
     ctx.fillText(points, 140, 72) 
 }
 
+//Função que mostra o número de vidas que o jogador tem(Falta a parte de diminuir uma vida quando o jogador é atingido por asteroide ou nave inimiga)
+function playerLives(){
+    var text = 'Lives:'
+    let lives = 3
+    ctx.font = '20px Verdana'
+    ctx.fillStyle = 'White'
+    ctx.fillText(text, 50, 100)
+    ctx.fillText(lives, 140, 102)
+}
+
 //function render
 function render() {
     //fade Canvas
@@ -265,5 +275,6 @@ function render() {
     drawTriangle()
     enemy()
     playerPoints()
+    playerLives()
     window.requestAnimationFrame(render)
 }
