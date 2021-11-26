@@ -186,11 +186,11 @@ function drawTriangle() {
     ctx.lineTo(rightPointX, rightPointY)   // lado direito
     ctx.fill()
 
-    //círculo da nave
+    /* //círculo da nave
     ctx.beginPath()
     ctx.arc(deltaX, deltaY, 20, 0, 2 * Math.PI)
     ctx.strokeStyle = 'green'
-    ctx.stroke()
+    ctx.stroke() */
 }
 
 //function init asteroids
