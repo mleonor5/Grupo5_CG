@@ -196,7 +196,7 @@ function drawTriangle() {
 //function init asteroids
 function init() {
     //setup the balls
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 10; i++) {
         let color = 'white'
 
         //Random size
