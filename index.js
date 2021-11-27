@@ -22,14 +22,6 @@ let points = 0
 //Vidas
 let lives = 3
 
-//destroir nave
-let shipDestroy = false
-
-//Points
-let points = 0
-//Vidas
-let lives = 3
-
 //As variáveis para as teclas
 let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
@@ -123,9 +115,6 @@ class Ball {
         this.d = d
         this.sW = sW
         this.sH = sH 
-
-        //colisao
-        this.collide = false
 
         //colisao
         this.collide = false
