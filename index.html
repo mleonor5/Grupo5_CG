@@ -20,12 +20,48 @@
 
     @font-face {
       font-family: myFont;
-      src: url('../fonte/DotGothic16-Regular.ttf');
+      src: url('./fonte/DotGothic16-Regular.ttf');
+    }
+
+    #menu-inicial{
+      position: absolute;
+      color: white;
+      font-family: myFont;
+      height: 100%;
+      width: 100%;
+      z-index:2
+    }
+
+    #menu-inicial > h1{
+      font-size: 17px;  
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    #menu-inicial > button{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      /* bring your own prefixes */
+      transform: translate(-50%, -50%);
+      background-color: transparent; /* Green */
+      border: none;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      font-size: 40px;
+      font-family: myFont;
     }
   </style>
 </head>
 
 <body>
+  <div id="menu-inicial">
+    <button style="visibility: visible;">PRESS ENTER </button>
+    <h1>ASTEROIDS GAME</h1>
+  </div>
   <canvas id="canvas"></canvas>
   <script src="./index.js"></script>
 </body>
