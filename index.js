@@ -5,15 +5,14 @@ const ctx = canvas.getContext('2d');
 
 let W = canvas.width
 let H = canvas.height, H1, W1
-//PARA VER O VIEWPORT https://stackoverflow.com/questions/28402100/wrong-value-for-window-innerwidth-during-onload-event-in-firefox-for-android
-const originalW = 1366
-const originalH = 768
-//balls (array of objects)
+const originalW = 1920    // Largura base da resolução
+const originalH = 1080     // Altura base da resolução
+//balls (array of objects)  
 let b = new Array()
 let balas = new Array()
 let resize = false
 const aToB = Math.sqrt(H ** 2 + W ** 2) / 1
-let sW = W/originalW
+let sW = W/originalW                                //Valor do x e o y do método scale
 const menuInicial = document.querySelector('#menu-inicial')
 //destroir nave
 let shipDestroy = false
@@ -33,14 +32,14 @@ window.onload = () => {
     start() //menu inicial
 }
 
-let resizeType = 0  //se o valor for 1, então será redimensionado o menu inicial. Se o valor for igual a 2 será redimensionado o jogo
-const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
+let resizeType = 0  //se o valor for 1, então significa que foi redimensionada a landing page. Se o valor for igual a 2 significa que o jogo foi redimensionado
+function debounce(func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
     return function () {
-        if(!resize){
-            H1 = H
-            W1 = W
-            resize = true
+        if(!resize){    // No primeiro instante em que o site sofreu redimensionamento
+            H1 = H      // o programa vai guardar a altura da página antes de ser redimensionada
+            W1 = W      // o programa vai guardar a largura da página antes de ser redimensionada
+            resize = true   // significa que o 
         }
         H = window.innerHeight
         W = document.body.offsetWidth
@@ -51,7 +50,6 @@ const debounce = function (func) {    // função debouncing inspirada do site h
 };
 
 window.addEventListener('resize', debounce((function () { 
-    
     makeItResize() 
 })))
 
@@ -456,7 +454,7 @@ function render() {
     });
     //desenhar e atualizar as balas 
     for (let i = 0; i < balas.length; i++) {
-        ctx.save()
+        ctx.save()    
         balas[i].draw()
         ctx.restore()
         balas[i].update()
@@ -467,7 +465,19 @@ function render() {
     if (!shipDestroy) {
         //atualiza o triangulo
         deltaY += g*2*sW*Math.sin(upAngleChosen)
-        deltaX += g*2*sW*Math.cos(upAngleChosen)
+        deltaX += g*2*sW*Math.cos(upAngleChosen)  
+        if (deltaY >= H + 31*sW) {    //Se o circulo ultrapassou a borda inferior
+            deltaY = -31*sW
+            deltaX = 31*sW 
+        } else if (deltaY <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda superior
+            deltaY = H + 31*sW
+            deltaX = 31*sW 
+        } else if (deltaX >= W + 31*sW) {    //Se o circulo ultrapassou a borda direita
+            deltaX = -31*sW
+        } else if (deltaX <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda esquerda
+            deltaX = W + 31*sW
+        } 
+        if(deltaY)
         drawTriangle()
     }
     enemy()
