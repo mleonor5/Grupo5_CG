@@ -16,24 +16,28 @@ let sW = W/originalW                                //Valor do x e o y do métod
 const menuInicial = document.querySelector('#menu-inicial')
 //destroir nave
 let shipDestroy = false
-
+const asterNum = 3 //Número inicial de asteroides
+let level = 1
 //Points
 let points = 0
 //Vidas
 let lives = 3
+//Audio para quando se dispara as balas
+let sound = new Audio()
+sound.src = './media/Laser_Gun.mp3'
 
 //As variáveis para as teclas
 let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
 window.onload = () => {
-    menuInicial.children[0].style.fontSize= (W * 40)/originalW + "px"
-    menuInicial.children[1].style.fontSize= (W * 17)/originalW + "px"
+    /* menuInicial.children[0].style.fontSize= (W * 40)/originalW + "px"
+    menuInicial.children[1].style.fontSize= (W * 17)/originalW + "px" */
     init()  //setup the array of objects
     start() //menu inicial
 }
 
 let resizeType = 0  //se o valor for 1, então significa que foi redimensionada a landing page. Se o valor for igual a 2 significa que o jogo foi redimensionado
-function debounce(func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
+const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
     return function () {
         if(!resize){    // No primeiro instante em que o site sofreu redimensionamento
@@ -43,7 +47,7 @@ function debounce(func) {    // função debouncing inspirada do site https://fl
         }
         H = window.innerHeight
         W = document.body.offsetWidth
-        console.log(W,H);
+        console.log(W, H);
         if (timer) { clearTimeout(timer) }    // if(timer) se timer tiver um valor, caso contrário não funciona
         timer = window.setTimeout(func, 600)
     };
@@ -57,10 +61,10 @@ let pause = 0, pauseTimeout
 //evento para quando a tecla é precionada
 window.addEventListener('keydown', (e) => {
     if (e.key == 'Enter') {
-        if(pause !=2){
-            pauseTimeout = window.setTimeout(()=>{
+        if (pause != 2) {
+            pauseTimeout = window.setTimeout(() => {
                 render()
-            },600)
+            }, 600)
         }
         pause = 2
     };
@@ -74,9 +78,11 @@ window.addEventListener('keydown', (e) => {
         upKey = true;
     }
 
-    if (e.key == " ") {
+    if (e.key == " " && shipDestroy == false) {
         if (!e.repeat) {
             shot = true
+            //Sempre que houver um disparo o audio vai ocorrer 
+            sound.play()
         }
     }
 
@@ -109,7 +115,7 @@ class Bullet {
 
     draw() {
         ctx.translate(this.x, this.y);
-        ctx.scale(this.sW,this.sW);
+        ctx.scale(this.sW, this.sW);
         ctx.fillStyle = this.c
         ctx.beginPath()
         ctx.arc(0, 0, this.R, 0, 2 * Math.PI)
@@ -125,21 +131,22 @@ class Bullet {
     }
 }
 
-//Class Balls
+let lvl = 1 + 0.1 * level
+//Class Asteroids
 class Ball {
     //constructor 
-    constructor(x, y, r, d, v, c,sW) {
+    constructor(x, y, r, d, v, c, sW) {
         this.x = x
         this.sW = sW
         this.d = d
         this.y = y
         //ALTERED: horizontal displacement
-        this.dx = this.sW * Math.cos(this.d)
+        this.dx = this.sW * Math.cos(this.d) * lvl
         //ALTERED:vertical displacement
-        this.dy = this.sW * Math.sin(this.d)
+        this.dy = this.sW * Math.sin(this.d) * lvl
         this.v = v
-        
-        
+
+
 
         //colisao
         this.collide = false
@@ -151,13 +158,13 @@ class Ball {
     //Draw asteroids
     draw() {
         ctx.translate(this.x, this.y);
-        ctx.scale(this.sW,this.sW)
+        ctx.scale(this.sW, this.sW)
         ctx.beginPath()
         ctx.arc(0, 0, this.R, 0, 2 * Math.PI)
         ctx.strokeStyle = this.color
         ctx.stroke()
 
-        
+
     }
 
     //update
@@ -165,7 +172,7 @@ class Ball {
         //update horizontal position
         this.x += this.dx
         //update vertical position
-        this.y += this.dy 
+        this.y += this.dy
     }
 
     leftCanvas() {
@@ -197,12 +204,12 @@ let upPointX, upPointY
 //função que desenha o triângulo
 function drawTriangle() {
     upPointX = 31 * Math.cos(upAngle)  // Coordenada X do ponto de onde saiem as balas
-    upPointY =  31 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
+    upPointY = 31 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
     let leftPointX = 31 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
     let leftPointY = 31 * Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
-    let rightPointX =  31 * Math.cos(rightAngle) // Coordenada X do ponto direito
-    let rightPointY =  31 * Math.sin(rightAngle) // Coordenada Y do ponto direito
-    
+    let rightPointX = 31 * Math.cos(rightAngle) // Coordenada X do ponto direito
+    let rightPointY = 31 * Math.sin(rightAngle) // Coordenada Y do ponto direito
+
     ctx.save()
     ctx.setTransform(sW, 0, 0, sW, deltaX, deltaY)
     ctx.fillStyle = "white"
@@ -222,12 +229,13 @@ function drawTriangle() {
 
 //function init asteroids
 function init() {
+    asteroids = (asterNum + level) * 7
     //setup the balls
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < asterNum + level; i++) {
         let color = 'white'
 
         //Random size
-        let radius = 40
+        let radius = 10 + Math.random() * 20
 
         //random position
         let xInit = radius + Math.random() * (W - 2 * radius)
@@ -239,68 +247,94 @@ function init() {
         //random velocity
         let velocity = 1
 
-        b.push(new Ball(xInit, yInit, radius, direction, velocity, color,sW))
+        b.push(new Ball(xInit, yInit, radius, direction, velocity, color, sW))
     }
 }
 let timer1
-function start(){
-    timer1 = window.setInterval(()=>{
-        if(menuInicial.children[0].style.visibility=="hidden"){
-            menuInicial.children[0].style.visibility="visible" 
-        } else{
-           menuInicial.children[0].style.visibility="hidden" 
+function start() {
+    timer1 = window.setInterval(() => {
+        if (menuInicial.children[0].style.visibility == "hidden") {
+            menuInicial.children[0].style.visibility = "visible"
+        } else {
+            menuInicial.children[0].style.visibility = "hidden"
         }
-        
+
     }, 500);
     beforeRender()
 }
+
+//NAVE INIMIGA
+//DIREÇÃO RANDOM
+let d = Math.random()
+//VELOCIDADE
+let v = 2
+//DESLOCAMENTO EM X
+let imgdX = v * Math.sin(d)
+//DESLOCAMENTO EM Y
+let imgdY = v * Math.cos(d)
+//IMAGEM
+let img = new Image()
+img.src = './media/imagens/enemy1.png'
+//COORDENADAS INICIAIS
+let imgX = (img.width / 2.6) + (Math.random() * (W - img.width / 2.6))
+let imgY = (img.height / 2.6) + (Math.random() * (H - img.height / 2.6))
 //Função que desenha a nave inimiga no canvas
 function enemy() {
-    //imagem
-    let img = new Image()
-    img.src = './enemy1.png'
-    //coordenadas iniciais(para já está estas coordendas até conseguir fazer o seu movimento)
-    let imgX = 300
-    let imgY = 200
+    //CHECK CANVAS VERTICAL COLLISIONS
+    if (imgX < img.width / 50 || imgX > W - img.width / 2.6) {
+        imgdX = -imgdX
+    }
+    //CHECK CANVAS HORIZONTAL COLLISIONS
+    if (imgY < img.height / 50 || imgY > H - img.height / 2.6) {
+        imgdY = -imgdY
+    }
+    imgX += imgdX
+    imgY += imgdY
     //desenha a imagem no canvas
     ctx.drawImage(img, imgX, imgY, img.width / 2.6, img.height / 2.6)
 }
 
 let playerPoints = {
-    points : 0,
-    text : `Pontos: ${points}`,
-    font : `${20*W/originalW}px myFont`,
-    fillStyle : 'White',
-    xText: W*40/originalW,
-    yText: H*60/originalH,
-    //Função que mostra o número de pontos(Falta a parte que conta os pontos que o utilizador ganha)
-    makePlayerPoints() {
+    points: 0,
+    text: `Pontos: ${points}`,
+    font: `${20 * W / originalW}px myFont`,
+    fillStyle: 'White',
+    xText: W * 40 / originalW,
+    yText: H * 60 / originalH,
+    //Função que mostra o número de pontos
+    makePlayerPoints(R) {
+        if (R <= 15) {
+            this.text = `Pontos: ${points += 20}`
+        } else if (R >= 16) {
+            this.text = `Pontos: ${points += 10}`
+        }
         ctx.font = this.font
         ctx.fillStyle = this.fillStyle
         ctx.fillText(this.text, this.xText, this.yText)
-    }    
+    }
 }
 
 let playerLives = {
-    lives : 3,
-    text : `Lives: ${lives}`,
-    font : `${20*W/originalW}px myFont`,
-    fillStyle : 'White',
-    xText: W*40/originalW,
-    yText: H*90/originalH,
+    lives: 3,
+    text: `Lives: ${lives}`,
+    font: `${20 * W / originalW}px myFont`,
+    fillStyle: 'White',
+    xText: W * 40 / originalW,
+    yText: H * 90 / originalH,
     //Função que mostra o número de vidas que o jogador tem(Falta a parte de diminuir uma vida quando o jogador é atingido por asteroide ou nave inimiga)
     makePlayerLives() {
+        this.text = `Lives: ${this.lives}`
         ctx.font = this.font
         ctx.fillStyle = this.fillStyle
         ctx.fillText(this.text, this.xText, this.yText)
-    } 
+    }
 }
 
 
 //verificar se ocorre colisao
 function checkCollision(obj1) {
     let squareDistance = (obj1.x - deltaX) * (obj1.x - deltaX) + (obj1.y - deltaY) * (obj1.y - deltaY);
-    if (squareDistance <= ((obj1.R*sW + 25*sW) * (obj1.R*sW + 25*sW))) {
+    if (squareDistance <= ((obj1.R * sW + 25 * sW) * (obj1.R * sW + 25 * sW))) {
         obj1.collide = true
     }
 }
@@ -308,14 +342,14 @@ function checkCollision(obj1) {
 function makeItResize() {
     resize = false
     canvas.height = H
-    canvas.width  = W
-    
-    //A nave do jogador
-    deltaX = deltaX * W/ W1
-    deltaY = deltaY * H/ H1
-    sW = W/originalW
+    canvas.width = W
 
-    //O nome do jogo
+    //A nave do jogador
+    deltaX = deltaX * W / W1
+    deltaY = deltaY * H / H1
+    sW = W / originalW
+
+    /* //O nome do jogo
     menuInicial.style.width=W + "px"
     menuInicial.style.height=H + "px"
     menuInicial.children[1].style.fontSize= (W * 17)/originalW + "px"
@@ -327,15 +361,27 @@ function makeItResize() {
     playerLives.xText= W*40/originalW
     playerLives.yText= H*90/originalH
     playerPoints.xText=W*40/originalW,
-    playerPoints.yText= H*60/originalH,
+    playerPoints.yText= H*60/originalH, */
 
     //Os asteróides
     b.forEach(function (ball) {
-        let xB = ((ball.x + ball.dx) * W) / W1
-        let xA = ball.x = (ball.x * W) / W1
-        let yB = ((ball.y + ball.dy) * H) / H1
-        let yA = ball.y = (ball.y * H) / H1
-        let xVetorAB = xB - xA
+        //Sabemos que, quando a página é redimensionada, as coordenadas da posição e a direção/ o angulo mudam.
+        //ponto A representa a nova posição da bola 
+        //ponto B representa a posição seguinte da bola
+        //No ponto C, o x é o valor da largura da página e o y é igual ao y do ponto A 
+        let xB = ((ball.x + ball.dx) * W) / W1       //x do ponto B
+        let xA = ball.x = (ball.x * W) / W1          //x do ponto A
+        let yB = ((ball.y + ball.dy) * H) / H1       //y do ponto B
+        let yA = ball.y = (ball.y * H) / H1          //y do ponto A
+        // xC = W
+        // yC = yA
+        // sabemos que podemos determinar o novo ângulo do elemento através da expressão cos(angulo) = denominador/numerador 
+        // denominador = x do vetor AB * x do vetor AC + y do vetor AB * y do vetor AC
+        //y do vetor AC = yC - yA = yA - yA = 0
+        //y do vetor AB * y do vetor AC = y do vetor AB * 0 = 0
+        //Logo, denominador = x do vetor AB * x do vetor AC
+        //numerador = sqrt(norma do vetor AB) * sqrt(norma do vetor AC)
+        let xVetorAB = xB - xA                         
         let yVetorAB = yB - yA
         let xVetorAC = W - xA
         let denominador = xVetorAB * xVetorAC
@@ -343,17 +389,17 @@ function makeItResize() {
         let normaAC = Math.sqrt(xVetorAC ** 2)
         let numerador = Math.abs(normaAB * normaAC)
         let cos = denominador / numerador
-        let angulo = Math.acos(cos)
+        let angulo = Math.acos(cos)                     // o novo angulo é igual ao acosseno (=cos-1) do resultado da expressão
         if(Math.PI <= ball.d && ball.d < 2*Math.PI ){
             angulo = 2*Math.PI - angulo 
         } 
-        ball.sW = W/originalW
-        ball.dx = ball.sW * Math.cos(angulo)
+        ball.sW = W/originalW                          // para reajustar a escala dos elementos
+        ball.dx = ball.sW * Math.cos(angulo)           
         ball.dy = ball.sW * Math.sin(angulo)
     })
 
     //As balas
-    if(balas != []){
+    if (balas != []) {
         balas.forEach(function (ball) {
             let xB = ((ball.x + ball.dx) * W) / W1
             let xA = ball.x = (ball.x * W) / W1
@@ -368,47 +414,71 @@ function makeItResize() {
             let numerador = Math.abs(normaAB * normaAC)
             let cos = denominador / numerador
             let angulo = Math.acos(cos)
-            if(Math.PI <= ball.d && ball.d < 2*Math.PI ){
-                angulo = 2*Math.PI - angulo 
-            } 
-            ball.sW = W/originalW
-            ball.dx = 4*ball.sW * Math.cos(angulo)
-            ball.dy = 4*ball.sW * Math.sin(angulo)
+            if (Math.PI <= ball.d && ball.d < 2 * Math.PI) {
+                angulo = 2 * Math.PI - angulo
+            }
+            ball.sW = W / originalW
+            ball.dx = 4 * ball.sW * Math.cos(angulo)
+            ball.dy = 4 * ball.sW * Math.sin(angulo)
         })
     }
-    if(resizeType == 1){
-        resizeType = 0 
-        window.requestAnimationFrame(beforeRender) 
-    } else{
-        resizeType = 0 
-        window.requestAnimationFrame(render) 
+    if (resizeType == 1) {
+        resizeType = 0
+        window.requestAnimationFrame(beforeRender)
+    } else {
+        resizeType = 0
+        window.requestAnimationFrame(render)
     }
-    
+
+}
+
+//colisao entre bala e os asteroides
+function Collision(bx, by, rb, ax, ay, ar) {
+    let rSum; //Soma dos raios
+    let diffx; //Diferença (distância) entre o x da bala e o x do asteroide
+    let diffy; //Diferença (distância) entre o y da bala e o y do asteroide
+
+    rSum = rb + ar;
+    diffx = bx - ax;
+    diffy = by - ay;
+
+    if (rSum > Math.sqrt((diffx * diffx) + (diffy * diffy))) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//começa um novo nível
+function newLevel() {
+    level += 1
+    console.log(`Nível: ${level - 1}`);
+    init()
 }
 
 function beforeRender() {
     //fade Canvas
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, W, H);
-    
+
     //draw update
     b.forEach(function (ball) {
         ctx.save()
-        ball.draw() 
+        ball.draw()
         ctx.restore();
         ball.update()
         ball.leftCanvas()
     })
-    if(pause != 2 && !resize){
-        window.requestAnimationFrame(beforeRender) 
+    if (pause != 2 && !resize) {
+        window.requestAnimationFrame(beforeRender)
     }
-    if(resize){
+    if (resize) {
         resizeType = 1
     }
-    if(pause == 2){
-        ctx.clearRect(0,0,W,H)
+    if (pause == 2) {
+        ctx.clearRect(0, 0, W, H)
         window.clearInterval(timer1);
-        menuInicial.children[0].style.display="none"
+        menuInicial.children[0].style.display = "none"
     }
 }
 let upAngleChosen = 0 // direção em que a nave se desloca quando o utilizador pressiona na seta para a frente. Soltado o dedo da tecla upArrow, a nave vai se continuar a movimentar-se na mesma direção até perder o impulso, mesmo que esta seja rotacionada.
@@ -428,8 +498,8 @@ function render() {
     }
     if (shot) {
         let color = `white`;
-        let xInit = upPointX*sW + deltaX       // coordenada x do ponto do triangulo escalado
-        let yInit = upPointY*sW + deltaY       // coordenada y do ponto do triangulo escalado
+        let xInit = upPointX * sW + deltaX       // coordenada x do ponto do triangulo escalado
+        let yInit = upPointY * sW + deltaY       // coordenada y do ponto do triangulo escalado
         let radius = 2
         let yDirection = Math.sin(upAngle)
         let xDirection = Math.cos(upAngle)
@@ -438,15 +508,36 @@ function render() {
     }
     if (upKey) {
         upAngleChosen = upAngle
-        if(g<1.5){
-           g+=0.1 
+        if (g < 1.0) {
+            g += 0.1
         }
-    }else{
-        if(g>0){
-           g-=0.01 
+    } else {
+        if (g > 0) {
+            g -= 0.01
         }
-        
+
     }
+
+    //verificar colisão entre as balas e os asteroides
+    if (b.length !== 0 && balas.length != 0) {
+        loop1:
+        for (let i = 0; i < b.length; i++) {
+            for (let j = 0; j < balas.length; j++) {
+                if (Collision(balas[j].x, balas[j].y, 2, b[i].x, b[i].y, b[i].R)) {
+                    console.log('colide');
+                    console.log(b.length - 1);
+                    playerPoints.makePlayerPoints(b[i].R)
+                    b.splice(i, 1)
+                    balas.splice(j, 1)
+                    break loop1
+                }
+            }
+        }
+    } else if (b.length === 0) {
+        level++
+        newLevel()
+    }
+
     //for all objects in the object array
     b.forEach(obj1 => {
         //check if it collides with other object
@@ -454,7 +545,7 @@ function render() {
     });
     //desenhar e atualizar as balas 
     for (let i = 0; i < balas.length; i++) {
-        ctx.save()    
+        ctx.save()
         balas[i].draw()
         ctx.restore()
         balas[i].update()
@@ -487,12 +578,14 @@ function render() {
     //draw update
     b.forEach(function (ball) {
         ctx.save()
-        ball.draw() 
+        ball.draw()
         ctx.restore();
         ball.update()
         ball.leftCanvas()
         if (ball.collide) {
             shipDestroy = true
+            playerLives.lives = lives - 1;
+            console.log(playerLives.lives);
         }
         //Para ver o hitbox do asteroide com escala
         /* ctx.beginPath()
@@ -501,8 +594,8 @@ function render() {
         ctx.stroke() */
     })
     if (!resize) {
-        window.requestAnimationFrame(render) 
-    }else{
+        window.requestAnimationFrame(render)
+    } else {
         resizeType = 2
     }
 }
