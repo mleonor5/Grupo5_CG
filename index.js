@@ -12,7 +12,7 @@ let b = new Array()
 let balas = new Array()
 let resize = false
 const aToB = Math.sqrt(H ** 2 + W ** 2) / 1
-let sW = W/originalW                                //Valor do x e o y do método scale
+let sW = W / originalW                                //Valor do x e o y do método scale
 const menuInicial = document.querySelector('#menu-inicial')
 //destroir nave
 let shipDestroy = false
@@ -33,6 +33,7 @@ window.onload = () => {
     /* menuInicial.children[0].style.fontSize= (W * 40)/originalW + "px"
     menuInicial.children[1].style.fontSize= (W * 17)/originalW + "px" */
     init()  //setup the array of objects
+    enemy() //nave inimiga
     start() //menu inicial
 }
 
@@ -40,7 +41,7 @@ let resizeType = 0  //se o valor for 1, então significa que foi redimensionada 
 const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
     return function () {
-        if(!resize){    // No primeiro instante em que o site sofreu redimensionamento
+        if (!resize) {    // No primeiro instante em que o site sofreu redimensionamento
             H1 = H      // o programa vai guardar a altura da página antes de ser redimensionada
             W1 = W      // o programa vai guardar a largura da página antes de ser redimensionada
             resize = true   // significa que o 
@@ -53,8 +54,8 @@ const debounce = function (func) {    // função debouncing inspirada do site h
     };
 };
 
-window.addEventListener('resize', debounce((function () { 
-    makeItResize() 
+window.addEventListener('resize', debounce((function () {
+    makeItResize()
 })))
 
 let pause = 0, pauseTimeout
@@ -274,7 +275,7 @@ let imgdX = v * Math.sin(d)
 let imgdY = v * Math.cos(d)
 //IMAGEM
 let img = new Image()
-img.src = './media/imagens/enemy1.png'
+img.src = './media/imagens/nave inimiga.svg'
 //COORDENADAS INICIAIS
 let imgX = (img.width / 2.6) + (Math.random() * (W - img.width / 2.6))
 let imgY = (img.height / 2.6) + (Math.random() * (H - img.height / 2.6))
@@ -381,7 +382,7 @@ function makeItResize() {
         //y do vetor AB * y do vetor AC = y do vetor AB * 0 = 0
         //Logo, denominador = x do vetor AB * x do vetor AC
         //numerador = sqrt(norma do vetor AB) * sqrt(norma do vetor AC)
-        let xVetorAB = xB - xA                         
+        let xVetorAB = xB - xA
         let yVetorAB = yB - yA
         let xVetorAC = W - xA
         let denominador = xVetorAB * xVetorAC
@@ -390,11 +391,11 @@ function makeItResize() {
         let numerador = Math.abs(normaAB * normaAC)
         let cos = denominador / numerador
         let angulo = Math.acos(cos)                     // o novo angulo é igual ao acosseno (=cos-1) do resultado da expressão
-        if(Math.PI <= ball.d && ball.d < 2*Math.PI ){
-            angulo = 2*Math.PI - angulo 
-        } 
-        ball.sW = W/originalW                          // para reajustar a escala dos elementos
-        ball.dx = ball.sW * Math.cos(angulo)           
+        if (Math.PI <= ball.d && ball.d < 2 * Math.PI) {
+            angulo = 2 * Math.PI - angulo
+        }
+        ball.sW = W / originalW                          // para reajustar a escala dos elementos
+        ball.dx = ball.sW * Math.cos(angulo)
         ball.dy = ball.sW * Math.sin(angulo)
     })
 
@@ -469,6 +470,7 @@ function beforeRender() {
         ball.update()
         ball.leftCanvas()
     })
+    enemy()
     if (pause != 2 && !resize) {
         window.requestAnimationFrame(beforeRender)
     }
@@ -555,21 +557,21 @@ function render() {
     }
     if (!shipDestroy) {
         //atualiza o triangulo
-        deltaY += g*2*sW*Math.sin(upAngleChosen)
-        deltaX += g*2*sW*Math.cos(upAngleChosen)  
-        if (deltaY >= H + 31*sW) {    //Se o circulo ultrapassou a borda inferior
-            deltaY = -31*sW
-            deltaX = 31*sW 
-        } else if (deltaY <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda superior
-            deltaY = H + 31*sW
-            deltaX = 31*sW 
-        } else if (deltaX >= W + 31*sW) {    //Se o circulo ultrapassou a borda direita
-            deltaX = -31*sW
-        } else if (deltaX <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda esquerda
-            deltaX = W + 31*sW
-        } 
-        if(deltaY)
-        drawTriangle()
+        deltaY += g * 2 * sW * Math.sin(upAngleChosen)
+        deltaX += g * 2 * sW * Math.cos(upAngleChosen)
+        if (deltaY >= H + 31 * sW) {    //Se o circulo ultrapassou a borda inferior
+            deltaY = -31 * sW
+            deltaX = 31 * sW
+        } else if (deltaY <= 0 - 31 * sW) {    //Se o circulo ultrapassou a borda superior
+            deltaY = H + 31 * sW
+            deltaX = 31 * sW
+        } else if (deltaX >= W + 31 * sW) {    //Se o circulo ultrapassou a borda direita
+            deltaX = -31 * sW
+        } else if (deltaX <= 0 - 31 * sW) {    //Se o circulo ultrapassou a borda esquerda
+            deltaX = W + 31 * sW
+        }
+        if (deltaY)
+            drawTriangle()
     }
     enemy()
     playerPoints.makePlayerPoints()
