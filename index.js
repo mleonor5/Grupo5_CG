@@ -389,6 +389,34 @@ function checkCollision(asteroid) {
     }
 }
 
+//colisão da nave com a nave inimiga
+function checkCollisionEnemy() {
+    let distance = (deltaX - (imgX + img.width / 5.2)) * (deltaX - (imgX + img.width / 5.2)) + (deltaY - (imgY + img.height / 5.2)) * (deltaY - (imgY + img.height / 5.2))
+    if (distance <= ((35 + 25 * sW) * (35 + 25 * sW))) {
+        shipDestroy = true
+        rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
+        leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
+        upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+
+        // a nave volta para o meio da página
+        deltaX = W / 2
+        deltaY = H / 2
+
+        //nave inimiga volta para uma posição inicial random
+        imgX = (img.width / 2.6) + (Math.random() * (W - img.width / 2.6))
+        imgY = (img.height / 2.6) + (Math.random() * (H - img.height / 2.6))
+
+        playerLives.lives--  //a nave perde uma vida
+        g = 0                //A nave perde impulso
+        if (playerLives.lives == 0) {  // Se a nave esgotou as vidas
+            gameOver = 1
+        } else {                       // senão continua a desenhar a nave
+            drawTriangle()
+            enemy()
+        }
+    }
+}
+
 function makeItResize() {
     resize = false
     canvas.height = H
@@ -599,6 +627,10 @@ function render() {
         //check if it collides with other object
         checkCollision(asteroid);
     });
+
+    //verificar colisão da nave com a nave inimiga
+    checkCollisionEnemy()
+
     //desenhar e atualizar as balas 
     for (let i = 0; i < balas.length; i++) {
         ctx.save()
