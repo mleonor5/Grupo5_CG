@@ -20,7 +20,7 @@ html {
   font-family: myFont;
   height: 100%;
   width: 100%;
-  z-index:2
+  z-index:2 
 }
 
 #menu-inicial > h1{
@@ -45,3 +45,46 @@ html {
   font-size: 40px;
   font-family: myFont;
 }
+
+#game-over{
+  position: absolute;
+  color: white;
+  font-family: myFont;
+  height: 100%;
+  width: 100%;
+  z-index:3 
+}
+
+#game-over > h1{
+  font-size: 40px;
+  font-family: myFont; 
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -250%);
+  text-align: center;
+}
+#game-over > h2{
+    font-family: myFont; 
+    font-size: 25px;  
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    text-align: center;
+}
+  
+#game-over > h4{
+  font-family: myFont; 
+  font-size: 25px;  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  text-align: center;
+  cursor: pointer;
+}
+
+#game-over > h4:hover{
+    color: aqua;
+  }
