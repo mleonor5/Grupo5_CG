@@ -52,7 +52,7 @@ let resizeType = 0  //se o valor for 1, então significa que foi redimensionada 
 const debounce = function (func) {    // função debouncing inspirada do site https://flaviocopes.com/canvas/
     let timer;
     return function () {
-        if(!resize){    // No primeiro instante em que o site sofreu redimensionamento
+        if (!resize) {    // No primeiro instante em que o site sofreu redimensionamento
             H1 = H      // o programa vai guardar a altura da página antes de ser redimensionada
             W1 = W      // o programa vai guardar a largura da página antes de ser redimensionada
             resize = true   
@@ -64,8 +64,8 @@ const debounce = function (func) {    // função debouncing inspirada do site h
     };
 };
 
-window.addEventListener('resize', debounce((function () { 
-    makeItResize() 
+window.addEventListener('resize', debounce((function () {
+    makeItResize()
 })))
 
 let pause = 0, pauseTimeout
@@ -308,7 +308,7 @@ let imgdX = v * Math.sin(d)
 let imgdY = v * Math.cos(d)
 //IMAGEM
 let img = new Image()
-img.src = './media/imagens/enemy1.png'
+img.src = './media/imagens/nave inimiga.svg'
 //COORDENADAS INICIAIS
 let imgX = (img.width / 2.6) + (Math.random() * (W - img.width / 2.6))
 let imgY = (img.height / 2.6) + (Math.random() * (H - img.height / 2.6))
@@ -427,7 +427,7 @@ function makeItResize() {
         //y do vetor AB * y do vetor AC = y do vetor AB * 0 = 0
         //Logo, denominador = x do vetor AB * x do vetor AC
         //numerador = sqrt(norma do vetor AB) * sqrt(norma do vetor AC)
-        let xVetorAB = xB - xA                         
+        let xVetorAB = xB - xA
         let yVetorAB = yB - yA
         let xVetorAC = W - xA
         let denominador = xVetorAB * xVetorAC
@@ -436,11 +436,11 @@ function makeItResize() {
         let numerador = Math.abs(normaAB * normaAC)
         let cos = denominador / numerador
         let angulo = Math.acos(cos)                     // o novo angulo é igual ao acosseno (=cos-1) do resultado da expressão
-        if(Math.PI <= ball.d && ball.d < 2*Math.PI ){
-            angulo = 2*Math.PI - angulo 
-        } 
-        ball.sW = W/originalW                          // para reajustar a escala dos elementos
-        ball.dx = ball.sW * Math.cos(angulo)           
+        if (Math.PI <= ball.d && ball.d < 2 * Math.PI) {
+            angulo = 2 * Math.PI - angulo
+        }
+        ball.sW = W / originalW                          // para reajustar a escala dos elementos
+        ball.dx = ball.sW * Math.cos(angulo)
         ball.dy = ball.sW * Math.sin(angulo)
     })
 
