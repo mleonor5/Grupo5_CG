@@ -42,7 +42,6 @@ let velocity = 1 //Velocidade inicial
 let level = 0
 let lives = 3 //Vidas
 let gameOver = 0 // Verificar se é game over ou não
-let enemyDestroy = false
 //As variáveis para as teclas
 let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
@@ -400,6 +399,14 @@ function checkCollision(asteroid) {
     }
 }
 
+//verifificar colisão entre balas e nave inimiga
+function enemyDestroy(bullet){
+    let distance = (bullet.x - (imgX + img.width / 5.2)) * (bullet.x - (imgX + img.width / 5.2)) + (bullet.y - (imgY + img.height / 5.2)) * (bullet.y - (imgY + img.height / 5.2))
+    if (distance <= ((bullet.R + 35) * (bullet.R + 35))){
+        img.src = ''
+    }
+}
+
 
 if (playerLives.lives == 0) {  // Se a nave esgotou as vidas
     balas = []                // As balas sao eliminadas
@@ -650,6 +657,7 @@ function render() {
     } else if (b.length === 0) {  //se não há mais asteróides, então o nível foi completado 
         level++
         init()  // reiniciar o desenho dos asteroides
+        img.src = './media/imagens/nave inimiga.svg'
     }
 
     //for all objects in the object array
@@ -657,6 +665,11 @@ function render() {
         //check if it collides with other object
         checkCollision(asteroid);
     });
+
+    //verificar colisão da nave com a nave inimiga
+    balas.forEach(bullet =>{
+        enemyDestroy(bullet)
+    })
 
     checkCollisionEnemy()
 
@@ -720,6 +733,7 @@ function render() {
                 playerLives.lives = 3
                 level = 1
                 init()
+                img.src = './media/imagens/nave inimiga.svg'
             })
             resizeType = 0
         }
