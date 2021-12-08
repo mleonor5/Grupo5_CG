@@ -35,10 +35,11 @@ let b = new Array()    //asteroides
 let balas = new Array()
 let resize = false
 const aToB = Math.sqrt(H ** 2 + W ** 2) / 1
-let sW = W/originalW                                //Valor do x e o y do método scale
+let sW = W / originalW                                //Valor do x e o y do método scale
 //destroir nave
 let shipDestroy = false
 let asterNum = 3 //Número inicial de asteroides
+let velocity = 1 //Velocidade inicial
 let level = 0
 let lives = 3 //Vidas
 let gameOver = 0 // Verificar se é game over ou não
@@ -49,6 +50,7 @@ window.onload = () => {
     /* menuInicial.children[0].style.fontSize= (W * 40)/originalW + "px"
     menuInicial.children[1].style.fontSize= (W * 17)/originalW + "px" */
     init()  //setup the array of objects
+    enemy() //nave inimiga
     start() //mostrar a landing page
 }
 
@@ -59,7 +61,7 @@ const debounce = function (func) {    // função debouncing inspirada do site h
         if (!resize) {    // No primeiro instante em que o site sofreu redimensionamento
             H1 = H      // o programa vai guardar a altura da página antes de ser redimensionada
             W1 = W      // o programa vai guardar a largura da página antes de ser redimensionada
-            resize = true   
+            resize = true
         }
         H = window.innerHeight                // atualiza o valor da altura
         W = document.body.offsetWidth         // atualiza o valor da largura
@@ -242,10 +244,12 @@ function drawTriangle() {
 function init() {
     b = [] // elimina todos os asteróides. É importante porque quando começamos o jogo, os três asteróides iniciais tem que ser eliminados para aparecem os novos asteróides
 
-    if (level == 0){   // na landing page só vão estar presentes três asteróides
+    if (level == 0) {   // na landing page só vão estar presentes três asteróides
         asterNum = 3
-    }else{ // no level x, o numero de asteroides é 5 + (x-1)
-        asterNum = 5 + (level-1)
+        velocity = 1
+    } else { // no level x, o numero de asteroides é 5 + (x-1)
+        asterNum = 5 + (level - 1)
+        velocity = velocity * 5 //aumenta a velocidade quando passa para o level seguinte
     }
 
     //criar os asteroides
@@ -253,28 +257,28 @@ function init() {
         let color = 'white'
 
         //Random size
-        let radius = level == 0 ?  50*sW : (10 + Math.random() * 40)*sW   // se level = 0, ou seja, se o  utilizador ainda encontra-se na landing page, o tamanho do asteróide será o máximo, caso contrário será um tamnho aleatorio entre 10 e 30
+        let radius = level == 0 ? 50 * sW : (10 + Math.random() * 40) * sW   // se level = 0, ou seja, se o  utilizador ainda encontra-se na landing page, o tamanho do asteróide será o máximo, caso contrário será um tamanho aleatorio entre 10 e 30
 
         let oneToFour = Math.floor(1+Math.random() * 4) // retorna valor aleatório entre 1 e 4
         let xInit, yInit
 
         //random position
-        if (oneToFour === 1){       
+        if (oneToFour === 1) {
             //O asteroide é desenhado encostado ao limite inferior
             xInit = radius + Math.random() * (W - 2 * radius)
-            yInit = H+radius
-        } else if(oneToFour === 2){
+            yInit = H + radius
+        } else if (oneToFour === 2) {
             //O asteroide é desenhado encostado ao limite superior
             xInit = radius + Math.random() * (H - 2 * radius)
-            yInit = 0-radius
-        }else if(oneToFour === 3){
+            yInit = 0 - radius
+        } else if (oneToFour === 3) {
             //O asteroide é desenhado encostado ao limite lateral da direita
             yInit = radius + Math.random() * (W - 2 * radius)
-            xInit = W+radius
-        }else if(oneToFour === 4){
+            xInit = W + radius
+        } else if (oneToFour === 4) {
             //O asteroide é desenhado encostado ao limite lateral da esquerda
             yInit = radius + Math.random() * (W - 2 * radius)
-            xInit = 0-radius
+            xInit = 0 - radius
         }
 
         //random direction
@@ -296,11 +300,11 @@ function init() {
 
         b.push(new Ball(xInit, yInit, radius, direction, velocity, color, sW))
     }
-    if(gameOver == 1){   //Se o utilizador perdeu e clicou em "PLAY AGAIN"
+    if (gameOver == 1) {   //Se o utilizador perdeu e clicou em "PLAY AGAIN"
         gameOver = 0
         ctx.clearRect(0,0,W,H) // Para garantir que o canvas é apagado completamente antes de começarmos um novo jogo
         window.requestAnimationFrame(render)
-    }   
+    }
 }
 let timer1
 function start() {
@@ -405,7 +409,6 @@ function checkCollision(asteroid) {
             g = 0                //A nave perde impulso 
             uA = 0
         }
-        
     }
 }
 
@@ -540,6 +543,7 @@ function beforeRender() {
         ball.update()
         ball.leftCanvas()
     })
+    enemy()
     if (pause != 1 && !resize) {
         window.requestAnimationFrame(beforeRender)
     }
@@ -627,7 +631,7 @@ function render() {
                     } else if (b[i].R >= 20*sW && b[i].R < 35*sW) {
                         playerPoints.text = `Points: ${playerPoints.points += 20}`
                         mediumAstSound.cloneNode().play()
-                    } else{
+                    } else {
                         playerPoints.text = `Points: ${playerPoints.points += 10}`
                         largeAstSound.cloneNode().play()
                     }
@@ -649,6 +653,10 @@ function render() {
         //check if it collides with other object
         checkCollision(asteroid);
     });
+
+    /* //verificar colisão da nave com a nave inimiga
+    checkCollisionEnemy() */
+
     //desenhar e atualizar as balas 
     for (let i = 0; i < balas.length; i++) {
         ctx.save()
@@ -767,12 +775,12 @@ function render() {
     if (!resize && !gameOver) { 
         window.requestAnimationFrame(render)
     } else {
-        ctx.clearRect(0,0,W,H)
+        ctx.clearRect(0, 0, W, H)
         resizeType = 2
-        if(gameOver == 1){ //Se a página não foi redimensionada, mas sim o utilizador perdeu o jogo
-            menuGameOver.style.display=""
+        if (gameOver == 1) { //Se a página não foi redimensionada, mas sim o utilizador perdeu o jogo
+            menuGameOver.style.display = ""
             menuGameOver.children[1].innerText = `POINTS: ${playerPoints.points}`
-            menuGameOver.children[2].addEventListener('click', () =>{
+            menuGameOver.children[2].addEventListener('click', () => {
                 //Tudo dá reset
                 menuGameOver.style.display="none"
                 playerPoints.points = 0
@@ -781,7 +789,7 @@ function render() {
                 level = 1
                 init()
             })
-            resizeType = 0 
+            resizeType = 0
         }
     }
 }
