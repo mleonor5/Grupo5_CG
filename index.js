@@ -24,12 +24,11 @@ mediumAstSound.src = './media/bangMedium.wav'
 const smallAstSound = new Audio()
 smallAstSound.src = './media/bangSmall.wav'
 //Audio para quando a nave anda para a frente
-/* const thrustSound = new Audio()
-thrustSound.src = './media/thrust.wav' */
-
+const thrustSound = new Audio()
+thrustSound.src = './media/thrust.wav'
 //animation sprite do fogo
-const FIRE = new Image()
-FIRE.src = "./media/imagens/fogo1.png"
+const fire = new Image()
+fire.src = "./media/imagens/fogo1.png"
 
 let b = new Array()    //asteroides  
 let balas = new Array()
@@ -43,6 +42,7 @@ let velocity = 1 //Velocidade inicial
 let level = 0
 let lives = 3 //Vidas
 let gameOver = 0 // Verificar se é game over ou não
+let enemyDestroy = false
 //As variáveis para as teclas
 let rightKey = false; let leftKey = false; let upKey = false; let shot = false
 
@@ -78,7 +78,7 @@ let pause = 0, pauseTimeout
 //evento para quando a tecla é precionada
 window.addEventListener('keydown', (e) => {
     if (e.key == 'Enter') {
-        if (!pause) {   // Se foi pressionado o enter pela primeira vez
+        if (pause != 1) {   // Se foi pressionado o enter pela primeira vez
             level++
             init()
             pauseTimeout = window.setTimeout(() => {   // cabe à pauseTimout começar o jogo 
@@ -95,7 +95,7 @@ window.addEventListener('keydown', (e) => {
     }
     if (e.key == 'ArrowUp') {
         upKey = true;
-        
+        thrustSound.cloneNode().play()
     }
 
     if (e.key == " " && shipDestroy == false) {
@@ -159,12 +159,11 @@ class Ball {
         this.sW = sW
         this.d = d
         this.y = y
-        this.v = v
         //ALTERED: horizontal displacement
-        this.dx = this.v * Math.cos(this.d) 
+        this.dx = this.sW * Math.cos(this.d)
         //ALTERED:vertical displacement
-        this.dy = this.v * Math.sin(this.d) 
-        
+        this.dy = this.sW * Math.sin(this.d)
+        this.v = v
         this.color = c
         this.R = r
     }
@@ -207,42 +206,41 @@ class Ball {
 
 //As variáveis vão contar a distância que o triângulo tem que mover em resultado da tecla precionada
 let deltaX = W / 2; let deltaY = H / 2;
-
 //gravidade da nave
 let g = 0
 let rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
 let leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
 let upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
-let upPointX, upPointY, leftPointX,leftPointY,rightPointX,rightPointY
+let upPointX, upPointY
 //função que desenha o triângulo
 function drawTriangle() {
     upPointX = 31 * Math.cos(upAngle)  // Coordenada X do ponto de onde saiem as balas
     upPointY = 31 * Math.sin(upAngle)  // Coordenada Y do ponto de onde saiem as balas
-    leftPointX = 31 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
-    leftPointY = 31 * Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
-    rightPointX = 31 * Math.cos(rightAngle) // Coordenada X do ponto direito
-    rightPointY = 31 * Math.sin(rightAngle) // Coordenada Y do ponto direito
+    let leftPointX = 31 * Math.cos(leftAngle) // Coordenada X do ponto esquerdo
+    let leftPointY = 31 * Math.sin(leftAngle) // Coordenada Y do ponto esquerdo
+    let rightPointX = 31 * Math.cos(rightAngle) // Coordenada X do ponto direito
+    let rightPointY = 31 * Math.sin(rightAngle) // Coordenada Y do ponto direito
 
     ctx.save()
     ctx.setTransform(sW, 0, 0, sW, deltaX, deltaY)
     ctx.fillStyle = "white"
     ctx.beginPath();
     ctx.moveTo(upPointX, upPointY);   // ponta da nave
-    ctx.lineTo(leftPointX, leftPointY)   // ponto esquerdo
-    ctx.lineTo(rightPointX, rightPointY)   // ponto direito
+    ctx.lineTo(leftPointX, leftPointY)   // lado esquerdo
+    ctx.lineTo(rightPointX, rightPointY)   // lado direito
     ctx.fill()
     ctx.restore()
 
-    //hitbox
+    //círculo da nave, ex-hitbox
     /* ctx.beginPath()
-    ctx.arc(deltaX, deltaY, 25*sW, 0, 2 * Math.PI)
+    ctx.arc(deltaX, deltaY, 31*sW, 0, 2 * Math.PI)
     ctx.strokeStyle = 'green'
     ctx.stroke()  */
 }
 
-//função que cria os asteroides
+//função init asteroids
 function init() {
-    b = [] // elimina todos os asteróides. É importante porque quando começamos o jogo, os três asteróides iniciais tem que ser eliminados para aparecem os novos asteróides
+    b = [] // elimina todos os asteróides. É importante porque quando começamos o jogo, os três asteróides tem que ser eliminados para aparecem os novos asteróides
 
     if (level == 0) {   // na landing page só vão estar presentes três asteróides
         asterNum = 3
@@ -250,16 +248,17 @@ function init() {
     } else { // no level x, o numero de asteroides é 5 + (x-1)
         asterNum = 5 + (level - 1)
         velocity = velocity * 5 //aumenta a velocidade quando passa para o level seguinte
+        console.log('Velocidade' + velocity);
+        console.log(level);
     }
 
-    //criar os asteroides
     for (let i = 0; i < asterNum; i++) {
         let color = 'white'
 
         //Random size
-        let radius = level == 0 ? 50 * sW : (10 + Math.random() * 40) * sW   // se level = 0, ou seja, se o  utilizador ainda encontra-se na landing page, o tamanho do asteróide será o máximo, caso contrário será um tamanho aleatorio entre 10 e 30
+        let radius = level == 0 ? 50 * sW : (10 + Math.random() * 40) * sW   // se level = 0, ou seja, se o  utilizador ainda encontra-se na landing page, o tamanho do asteróide será o máximo, caso contrário será um tamnho aleatorio entre 10 e 30
 
-        let oneToFour = Math.floor(1+Math.random() * 4) // retorna valor aleatório entre 1 e 4
+        let oneToFour = Math.floor(1 + Math.random() * 4) // retorna valor entre 1 e 4
         let xInit, yInit
 
         //random position
@@ -281,28 +280,17 @@ function init() {
             xInit = 0 - radius
         }
 
+
         //random direction
         let direction = Math.random() * 2 * Math.PI
-        //velocity
-        let velocity
-        if (radius >= 10*sW && radius < 20*sW) {
-            velocity = 1*sW + (level/10)      // (level/10) a velocidade aumenta quado o nível aumenta  
-        } else if (radius >= 20*sW && radius < 35*sW) {
-            velocity = 0.8*sW + (level/10)
-        } else{
-            velocity = 0.5*sW + (level/10)
-            if(!level){
-                velocity = sW
-            }
-            
-        }
-        
+
+        //random velocity
+        let velocity = 1
 
         b.push(new Ball(xInit, yInit, radius, direction, velocity, color, sW))
     }
     if (gameOver == 1) {   //Se o utilizador perdeu e clicou em "PLAY AGAIN"
         gameOver = 0
-        ctx.clearRect(0,0,W,H) // Para garantir que o canvas é apagado completamente antes de começarmos um novo jogo
         window.requestAnimationFrame(render)
     }
 }
@@ -348,6 +336,11 @@ function enemy() {
     imgY += imgdY
     //desenha a imagem no canvas
     ctx.drawImage(img, imgX, imgY, img.width / 2.6, img.height / 2.6)
+
+    // ctx.beginPath()
+    // ctx.arc(imgX + img.width / 5.2, imgY + img.height / 5.2, 35, 0, 2 * Math.PI)
+    // ctx.strokeStyle = 'green'
+    // ctx.stroke()
 }
 
 let playerPoints = {
@@ -358,7 +351,7 @@ let playerPoints = {
     xText: W * 40 / originalW,
     yText: H * 60 / originalH,
     //Função que mostra o número de pontos
-    makePlayerPoints(R) {
+    makePlayerPoints() {
         ctx.font = this.font
         ctx.fillStyle = this.fillStyle
         ctx.fillText(this.text, this.xText, this.yText)
@@ -385,29 +378,70 @@ let playerLives = {
 //verificar se ocorre colisao
 function checkCollision(asteroid) {
     let squareDistance = (asteroid.x - deltaX) * (asteroid.x - deltaX) + (asteroid.y - deltaY) * (asteroid.y - deltaY);
-    if (squareDistance <= ((asteroid.R * sW + 25 * sW) * (asteroid.R * sW + 25 * sW))) {    
-        if (!shipDestroy){    //Se a nave colidiu pela primeira vez
-            deltas = [[deltaX,deltaY],[deltaX,deltaY],[deltaX,deltaY]]
-            mediumAstSound.play()
-        }
+    if (squareDistance <= ((asteroid.R * sW + 25 * sW) * (asteroid.R * sW + 25 * sW))) {
         shipDestroy = true
-        
-        if(playerLives.lives == 0){  // Se a nave esgotou as vidas
-            balas = []                // As balas sao eliminadas
+        init()
+        rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
+        leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
+        upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+
+        // a nave volta para o meio da página
+        deltaX = W / 2
+        deltaY = H / 2
+
+        playerLives.lives--  //a nave perde uma vida
+        g = 0                //A nave perde impulso
+        if (playerLives.lives == 0) {  // Se a nave esgotou as vidas
             gameOver = 1
-            shipDestroy = false
-            times = 0
-            rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
-            leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
-            upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+        } else {                       // senão continua a desenhar a nave
+            drawTriangle()
+        }
 
-            // a nave volta para o meio da página
-            deltaX = W / 2                    
-            deltaY = H /2
+    }
+}
 
-            playerLives.lives--  //a nave perde uma vida
-            g = 0                //A nave perde impulso 
-            uA = 0
+
+if (playerLives.lives == 0) {  // Se a nave esgotou as vidas
+    balas = []                // As balas sao eliminadas
+    gameOver = 1
+    shipDestroy = false
+    times = 0
+    rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
+    leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
+    upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+
+    // a nave volta para o meio da página
+    deltaX = W / 2
+    deltaY = H / 2
+
+    playerLives.lives--  //a nave perde uma vida
+    g = 0                //A nave perde impulso 
+    uA = 0
+}
+
+//colisão da nave com a nave inimiga
+function checkCollisionEnemy() {
+    let distance = (deltaX - (imgX + img.width / 5.2)) * (deltaX - (imgX + img.width / 5.2)) + (deltaY - (imgY + img.height / 5.2)) * (deltaY - (imgY + img.height / 5.2))
+    if (distance <= ((35 + 25 * sW) * (35 + 25 * sW))) {
+        shipDestroy = true
+        rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
+        leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
+        upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
+
+        // a nave volta para o meio da página
+        deltaX = W / 2
+        deltaY = H / 2
+
+        imgX = (img.width / 2.6) + (Math.random() * (W - img.width / 2.6))
+        imgY = (img.height / 2.6) + (Math.random() * (H - img.height / 2.6))
+
+        playerLives.lives--  //a nave perde uma vida
+        g = 0                //A nave perde impulso
+        if (playerLives.lives == 0) {  // Se a nave esgotou as vidas
+            gameOver = 1
+        } else {                       // senão continua a desenhar a nave
+            drawTriangle()
+            enemy()
         }
     }
 }
@@ -420,8 +454,6 @@ function makeItResize() {
     //A nave do jogador
     deltaX = deltaX * W / W1
     deltaY = deltaY * H / H1
-    deltas = [[deltaX,deltaY],[deltaX,deltaY],[deltaX,deltaY]]
-    //atualizar a razão
     sW = W / originalW
 
     /* //O nome do jogo
@@ -468,15 +500,9 @@ function makeItResize() {
         if (Math.PI <= ball.d && ball.d < 2 * Math.PI) {
             angulo = 2 * Math.PI - angulo
         }
-        // reajustar a velocidade do asteroide
-        //Na função init(), definimos a velocidade = (valor hardcode)*sW + (level/10), o problema é que sW apresenta um valor desatualizado, entao temos que o atualizar
-        ball.v -= (level/10)
-        ball.v /= ball.sW
         ball.sW = W / originalW                          // para reajustar a escala dos elementos
-        ball.v = ball.v * ball.sW + (level/10)
-
-        ball.dx = ball.v * Math.cos(angulo)
-        ball.dy = ball.v * Math.sin(angulo)
+        ball.dx = ball.sW * Math.cos(angulo)
+        ball.dy = ball.sW * Math.sin(angulo)
     })
 
     //As balas
@@ -530,6 +556,7 @@ function Collision(bx, by, rb, ax, ay, ar) {
     }
 }
 
+
 function beforeRender() {
     //fade Canvas
     ctx.fillStyle = "black"
@@ -550,30 +577,26 @@ function beforeRender() {
     if (resize) {
         resizeType = 1
     }
-    if (pause) {
+    if (pause == 1) {
         ctx.clearRect(0, 0, W, H)
         window.clearInterval(timer1);
         menuInicial.children[0].style.display = "none"
     }
 }
 let upAngleChosen = 0 // direção em que a nave se desloca quando o utilizador pressiona na seta para a frente. Soltado o dedo da tecla upArrow, a nave vai se continuar a movimentar-se na mesma direção até perder o impulso, mesmo que esta seja rotacionada.
-let lA, uA, rA // ângulos do triângulo desfragmentado cujos valores são iguais aos valores de leftAngle, upAngle e rightAngle
-let deltas = [[deltaX,deltaY],[deltaX,deltaY],[deltaX,deltaY]]  //lista que contem o deltaX e o deltaY de cada lado do triângulo desfragmentado
-let times = 0 // conta quantas vezes os lados do triangulo desfragmentado se moveram.
-let frameIndex = 0, frameTimes = 0
 function render() {
     //fade Canvas
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, W, H);
     if (rightKey) {
-        rightAngle += 0.05 *sW
-        leftAngle += 0.05 *sW
-        upAngle += 0.05*sW
+        rightAngle += 0.05
+        leftAngle += 0.05
+        upAngle += 0.05
     };
     if (leftKey) {
-        leftAngle -= 0.05*sW
-        rightAngle -= 0.05*sW
-        upAngle -= 0.05*sW
+        leftAngle -= 0.05
+        rightAngle -= 0.05
+        upAngle -= 0.05
     }
     if (shot) {
         let color = `white`;
@@ -586,31 +609,9 @@ function render() {
         shot = false
     }
     if (upKey) {
-        ctx.save()
-
-        //ANIMATION SPRITE: FOGO
-        if(!shipDestroy){
-            //Preciso encontrar o ponto médio (midPoint) entre leftPoint e rightPoint, ou seja, o ponto esquerdo e ponto direito da nave para podermos colocar o fogo nas costas da nave
-            midPointX = ((leftPointX*sW+deltaX)+(rightPointX*sW+deltaX))/2    // Todas as variáveis são multiplicadas por sW, por causa da transformação à escala que é feita na função drawTriangle() e por fim somadas com o delta (deltaY se for a coordenada y de um ponto, deltaX se for a coordenada x de um ponto) por causa do translate que é aplicado também
-            midPointY = ((leftPointY*sW+deltaY)+(rightPointY*sW+deltaY))/2
-            ctx.save()
-            ctx.translate(midPointX,midPointY)
-            ctx.rotate(180 * Math.PI/180 + upAngle +(Math.PI/2)) //A direção em que a nave se desloca é o inverso da direção em que as chamas sao expelidas. Depois adicionei (Math.PI/2) (90 graus) porque verificou-se que se a nave sem rotação, ou seja, rotation(0), já parece ter uma direção corresponde a -90 graus. Por isso se quisermos fazer com que as chamas tenham o valor de direção 0, temos que adicionar aos -90 mais 90. 
-            ctx.scale(sW,sW) 
-            ctx.drawImage(FIRE, frameIndex*90, 0, 90, 110, -90/3/2,-110/3/2, 90/3, 110/3 )  // Para fazer com que o ponto de origem fosse o centro do objeto das chamas, tivemos que indicar os valores -90/3/2 para x e -110/3/2 para y.
-            ctx.restore()
-            if(frameTimes >= 20){   // J+a que não se deve user setInterval, usamos o frameTimes para definir o tempo entre cada frame
-                frameIndex ++
-                frameTimes = 0
-            }
-            frameTimes++
-            upAngleChosen = upAngle
-        }
+        upAngleChosen = upAngle
         if (g < 1.0) {
             g += 0.1
-        }
-        if(frameIndex == 4){
-            frameIndex =0
         }
     } else {
         if (g > 0) {
@@ -625,10 +626,13 @@ function render() {
         for (let i = 0; i < b.length; i++) {
             for (let j = 0; j < balas.length; j++) {
                 if (Collision(balas[j].x, balas[j].y, 2, b[i].x, b[i].y, b[i].R)) {
-                    if (b[i].R >= 10*sW && b[i].R < 20*sW) {
+                    /* console.log('colide');
+                    console.log(b.length - 1); */
+
+                    if (b[i].R <= 10 * sW) {
                         playerPoints.text = `Points: ${playerPoints.points += 30}`
                         smallAstSound.cloneNode().play()
-                    } else if (b[i].R >= 20*sW && b[i].R < 35*sW) {
+                    } else if (b[i].R > 10 * sW && b[i].R < 20 * sW) {
                         playerPoints.text = `Points: ${playerPoints.points += 20}`
                         mediumAstSound.cloneNode().play()
                     } else {
@@ -636,7 +640,7 @@ function render() {
                         largeAstSound.cloneNode().play()
                     }
 
-                    playerPoints.makePlayerPoints(b[i].R)
+                    playerPoints.makePlayerPoints()
                     b.splice(i, 1)
                     balas.splice(j, 1)
                     break loop1
@@ -654,8 +658,7 @@ function render() {
         checkCollision(asteroid);
     });
 
-    /* //verificar colisão da nave com a nave inimiga
-    checkCollisionEnemy() */
+    checkCollisionEnemy()
 
     //desenhar e atualizar as balas 
     for (let i = 0; i < balas.length; i++) {
@@ -669,92 +672,20 @@ function render() {
     }
 
     //atualiza o triangulo
-    if(!shipDestroy){ // Se a nave não colidiu com nenhum objeto
-        deltaY += g*2*sW*Math.sin(upAngleChosen)
-        deltaX += g*2*sW*Math.cos(upAngleChosen)  
-        if (deltaY >= H + 31*sW) {    //Se o circulo ultrapassou a borda inferior
-            deltaY = -31*sW
-        } else if (deltaY <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda superior
-            deltaY = H + 31*sW
-        } else if (deltaX >= W + 31*sW) {    //Se o circulo ultrapassou a borda direita
-            deltaX = -31*sW
-        } else if (deltaX <= 0 - 31*sW) {    //Se o circulo ultrapassou a borda esquerda
-            deltaX = W + 31*sW
-        } 
-        drawTriangle()
-    }else{ //Caso contrário, a nave produz um efeito de desfragmentação
-        // Para não podermos rotacionar os ângulos do triângulo desfragmentado
-        if(!uA){    
-            uA = upAngle
-            lA = leftAngle
-            rA = rightAngle
-        }
-        //Um triangulo normal é representado por três pontos. Um triângulo desfragmentado é divido por 3 retas e cada reta contém 2 pontos (no total dão 6 pontos). 
-        //Vamos usar os três pontos originais da reta mais 3 clones dos mesmos.
-        upPointX = 31 * Math.cos(uA)  // Coordenada X do ponto de onde saiem as balas
-        upPointY = 31 * Math.sin(uA)  // Coordenada Y do ponto de onde saiem as balas
-        let upPointXClone = 31 * Math.cos(uA) 
-        let upPointYClone = 31 * Math.sin(uA)  
-        leftPointX = 31 * Math.cos(lA) // Coordenada X do ponto esquerdo
-        leftPointY = 31 * Math.sin(lA) // Coordenada Y do ponto esquerdo
-        let leftPointXClone = 31 * Math.cos(lA) 
-        let leftPointYClone = 31 * Math.sin(lA) 
-        rightPointX = 31 * Math.cos(rA) // Coordenada X do ponto direito
-        rightPointY = 31 * Math.sin(rA) // Coordenada Y do ponto direito
-        let rightPointXClone = 31 * Math.cos(rA) 
-        let rightPointYClone = 31 * Math.sin(rA)
-
-        ctx.strokeStyle = "white"
-        ctx.save()
-
-        //Lado esquerdo
-        deltas[0][0] += 0.5*sW * Math.cos(uA - Math.PI/2)
-        deltas[0][1] += 0.5*sW * Math.sin(uA - Math.PI/2)
-        ctx.setTransform(sW, 0, 0, sW, deltas[0][0], deltas[0][1])
-        ctx.beginPath();
-        ctx.moveTo(upPointX, upPointY);  
-        ctx.lineTo(leftPointX, leftPointY)  
-        ctx.stroke()
-
-        //Lado base
-        deltas[1][0] += 0.5*sW * Math.cos(uA + Math.PI)
-        deltas[1][1] += 0.5*sW * Math.sin(uA + Math.PI)
-        ctx.setTransform(sW, 0, 0, sW, deltas[1][0], deltas[1][1])
-        ctx.beginPath();
-        ctx.moveTo(leftPointXClone, leftPointYClone);   
-        ctx.lineTo(rightPointX, rightPointY)   
-        ctx.stroke()
-
-        // Lado direito
-        deltas[2][0] += 0.5*sW * Math.cos(uA + Math.PI/2)
-        deltas[2][1] += 0.5*sW * Math.sin(uA + Math.PI/2)
-        ctx.setTransform(sW, 0, 0, sW, deltas[2][0], deltas[2][1])
-        ctx.beginPath();
-        ctx.moveTo(rightPointXClone, rightPointYClone);
-        ctx.lineTo(upPointXClone, upPointYClone)  
-        ctx.stroke()
-        
-        ctx.restore()
-
-        if(times === 100){
-            shipDestroy = false
-            times = 0
-            init()
-            rightAngle = Math.PI * 60 / 180   // ângulo do ponto direito
-            leftAngle = Math.PI * 120 / 180   // ângulo do ponto esquerdo
-            upAngle = Math.PI * (-90) / 180   // ângulo do ponto de onde saiem as balas
-
-            // a nave volta para o meio da página
-            deltaX = W / 2                    
-            deltaY = H /2
-
-            playerLives.lives--  //a nave perde uma vida
-            g = 0                //A nave perde impulso 
-            uA = 0               // Para na próxima vez em que o objeto colidir com o asteróide, seja guardada a nova direçao da nava
-        }else{
-            times++
-        }
+    deltaY += g * 2 * sW * Math.sin(upAngleChosen)
+    deltaX += g * 2 * sW * Math.cos(upAngleChosen)
+    if (deltaY >= H + 31 * sW) {    //Se o circulo ultrapassou a borda inferior
+        deltaY = -31 * sW
+    } else if (deltaY <= 0 - 31 * sW) {    //Se o circulo ultrapassou a borda superior
+        deltaY = H + 31 * sW
+    } else if (deltaX >= W + 31 * sW) {    //Se o circulo ultrapassou a borda direita
+        deltaX = -31 * sW
+    } else if (deltaX <= 0 - 31 * sW) {    //Se o circulo ultrapassou a borda esquerda
+        deltaX = W + 31 * sW
     }
+    drawTriangle()
+
+    shipDestroy = false
     enemy()
     playerPoints.makePlayerPoints()
     playerLives.makePlayerLives()
@@ -772,7 +703,7 @@ function render() {
         ctx.strokeStyle = 'red'
         ctx.stroke() */
     })
-    if (!resize && !gameOver) { 
+    if (!resize && !gameOver) {
         window.requestAnimationFrame(render)
     } else {
         ctx.clearRect(0, 0, W, H)
@@ -782,7 +713,8 @@ function render() {
             menuGameOver.children[1].innerText = `POINTS: ${playerPoints.points}`
             menuGameOver.children[2].addEventListener('click', () => {
                 //Tudo dá reset
-                menuGameOver.style.display="none"
+                console.log(playerPoints.points, level);
+                menuGameOver.style.display = "none"
                 playerPoints.points = 0
                 playerPoints.text = 'Points: 0'
                 playerLives.lives = 3
