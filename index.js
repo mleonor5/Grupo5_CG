@@ -24,8 +24,8 @@ mediumAstSound.src = './media/bangMedium.wav'
 const smallAstSound = new Audio()
 smallAstSound.src = './media/bangSmall.wav'
 //Audio para quando a nave anda para a frente
-const thrustSound = new Audio()
-thrustSound.src = './media/thrust.wav'
+// const thrustSound = new Audio()
+// thrustSound.src = './media/thrust.wav'
 //animation sprite do fogo
 const fire = new Image()
 fire.src = "./media/imagens/fogo1.png"
@@ -94,7 +94,7 @@ window.addEventListener('keydown', (e) => {
     }
     if (e.key == 'ArrowUp') {
         upKey = true;
-        thrustSound.cloneNode().play()
+        // thrustSound.cloneNode().play()
     }
 
     if (e.key == " " && shipDestroy == false) {
